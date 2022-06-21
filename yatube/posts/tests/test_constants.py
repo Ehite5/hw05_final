@@ -6,7 +6,6 @@ FOLLOW_URL = reverse('posts:follow_index')
 CREATE_URL = reverse('posts:post_create')
 GROUP_URL = reverse('posts:group_list', kwargs={'slug': 'test-slug'})
 PROFILE_URL = reverse('posts:profile', kwargs={'username': 'TestUser'})
-COMMENT_URL = reverse('posts:add_comment')
 
 
 USERNAME = 'TestUser'

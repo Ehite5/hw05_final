@@ -6,7 +6,7 @@ from django.urls import reverse
 from yatube.settings import WORKS_WELL
 
 from ..models import Group, Post, User
-from .test_constants import (COMMENT_URL, CREATE_URL, GROUP_URL,
+from .test_constants import (CREATE_URL, GROUP_URL,
                              GROUP_DESCRIPTION, GROUP_SLUG,
                              GROUP_TITLE, FORM_POST_TEXT,
                              INDEX_URL, PROFILE_URL, USERNAME)
@@ -35,6 +35,8 @@ class PostURLTests(TestCase):
         cls.DETAIL_URL = reverse(
             'posts:post_detail', kwargs={'post_id': cls.post.id}
         )
+        cls.COMMENT_URL = reverse(
+            'posts:add_comment', kwargs={'post_id': cls.posts[0].pk})
 
     def setUp(self) -> None:
         self.authorized_client = Client()
@@ -98,7 +100,7 @@ class PostURLTests(TestCase):
         """
 
         response_edit = self.guest_client.get(self.EDIT_URL)
-        response_comment = self.guest_client.get(COMMENT_URL)
+        response_comment = self.guest_client.get(self.COMMENT_URL)
         self.assertRedirects(response_edit, (
             f'/auth/login/?next=/posts/{PostURLTests.post.pk}/edit/'))
         self.assertRedirects(response_comment, (
