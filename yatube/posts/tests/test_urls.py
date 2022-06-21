@@ -36,7 +36,7 @@ class PostURLTests(TestCase):
             'posts:post_detail', kwargs={'post_id': cls.post.id}
         )
         cls.COMMENT_URL = reverse(
-            'posts:add_comment', kwargs={'post_id': cls.posts[0].pk})
+            'posts:add_comment', kwargs={'post_id': cls.post.id})
 
     def setUp(self) -> None:
         self.authorized_client = Client()
