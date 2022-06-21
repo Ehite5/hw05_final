@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}
+  {% if is_edit %}
+    Редактировать пост
+  {% else %}
+    Новый пост
+  {% endif %}
+{% endblock %}
+{% block content %}
+  <div class="container py-5">
+    {% if is_edit %}
+      <h1>Редактировать пост</h1>
+      {% url 'posts:post_update' post.id as the_url %}
+      {% include 'includes/form.html' with card_title='Редактировать пост' action_url=the_url button_text='Сохранить' %}
+    {% else %}
+      <h1>Новый пост</h1>
+      {% url 'posts:post_create' as the_url %}
+      {% include 'includes/form.html' with card_title='Новый пост' action_url=the_url button_text='Добавить' %}
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load cache %}
+<title>{% block title %}{{text_main}}{% endblock %}</title>
+{% block content %}
+  <div class="container">
+    <h1>Поиск по записям</h1>
+    <div class="card">
+      <div class="card-body">
+        <form class="form-inline" action="/">                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+          <div class="form-row">
+          <input name="q" class="form-control form-control-lg" type="search" 
+            placeholder="Поиск" 
+              {% if keyword %}
+                  value="{{ keyword }}"
+              {% endif %}
+          >
+          <button class="btn" type="submit">Найти</button>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
+  {% cache 20 index_page %}
+  <div class="container py-5">     
+    <h1>{{text_main}}</h1>
+    {% include 'includes/switcher.html'%}
+    {% for post in page_obj %}
+      {% include 'includes/publication_card.html' %}
+      {% if not forloop.last %}<hr>{%endif%}
+    {% endfor %}
+    {% include 'includes/paginator.html' %}
+  </div>  
+  {% endcache %}
+{% endblock %}
+</body>

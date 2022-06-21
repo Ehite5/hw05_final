@@ -1,0 +1,19 @@
+{% extends 'base.html' %} 
+{% block title %}{{text_groups}} {{ group }}{% endblock %}
+  {% block content %}
+  <div class="container py-5">
+    <h1>
+      {{ group }}
+    </h1>
+    <p> 
+      {{ group.description }} 
+    </p>
+    {%for post in page_obj%}
+      {% include 'includes/publication_card.html' %}
+      {% if not forloop.last %}
+        <hr>
+      {%endif%}
+    {% endfor %}
+    {% include 'includes/paginator.html' %}       
+  </div>  
+{% endblock %}
