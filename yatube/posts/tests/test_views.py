@@ -52,10 +52,6 @@ class PostViewsTest(TestCase):
         cls.DETAIL_URL = reverse(
             'posts:post_detail', kwargs={'post_id': cls.posts[0].pk}
         )
-        cls.comment = Comment.objects.create(post=cls.posts,
-                                             author=cls.author,
-                                             text='Тестовый комментарий'
-                                             )
 
     def setUp(self) -> None:
         self.guest_client = Client()
