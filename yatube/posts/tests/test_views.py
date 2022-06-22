@@ -53,7 +53,7 @@ class PostViewsTest(TestCase):
             'posts:post_detail', kwargs={'post_id': cls.posts[0].pk}
         )
         cls.comment = Comment.objects.create(post=cls.posts,
-                                             author=cls.posts.author,
+                                             author=cls.author,
                                              text='Тестовый комментарий'
                                              )
 
