@@ -47,6 +47,11 @@ class PostFormTests(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=SMALL_GIF,
+            content_type='image/gif'
+        )
 
     def tearDown(self):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
@@ -58,6 +63,7 @@ class PostFormTests(TestCase):
         form_data = {
             'text': FORM_POST_TEXT,
             'group': self.group.id,
+            'image': self.uploaded
         }
         response = self.authorized_client.post(
             CREATE_URL,
@@ -89,7 +95,6 @@ class PostFormTests(TestCase):
         form_data_new = {
             'text': 'Новый текст',
             'group': self.group.id,
-            'image': self.image
         }
         response = self.authorized_client.post(
             self.EDIT_URL,

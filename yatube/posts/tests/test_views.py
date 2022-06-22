@@ -42,6 +42,11 @@ class PostViewsTest(TestCase):
                     text=f'Тестовый пост {i}',
                     author=cls.user,
                     group=cls.group,
+                    image=SimpleUploadedFile(
+                        name='small.gif',
+                        content=SMALL_GIF,
+                        content_type='image/gif'
+                    )
                 )
             )
         Post.objects.bulk_create(all_posts)
@@ -53,13 +58,12 @@ class PostViewsTest(TestCase):
             'posts:post_detail', kwargs={'post_id': cls.posts[0].pk}
         )
 
-    def setUp(self) -> None:
+    def setUp(self):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         self.authorized_client2 = Client()
         self.authorized_client2.force_login(self.no_author)
-        self.no_follower.force_login(self.no_follower)
         self.uploaded = SimpleUploadedFile(
             name='small.gif',
             content=SMALL_GIF,
@@ -137,7 +141,7 @@ class PostViewsTest(TestCase):
         self.assertEqual(str(group_check), 'Тестовая группа')
         self.assertEqual(author_gr, 'TestUser')
         self.assertEqual(group_gr, 'Тестовая группа')
-        self.assertEqual(image_gr, SMALL_GIF)
+        self.assertIsNotNone(image_gr)
 
     def test_index_url_context(self):
         """Проверка правильной передачи контекста на главную страницу."""
@@ -154,7 +158,7 @@ class PostViewsTest(TestCase):
         self.assertEqual(author_index, 'TestUser')
         self.assertEqual(group_index, 'Тестовая группа')
         self.assertEqual(text_main_check, 'Последние обновления на сайте')
-        self.assertEqual(image_index, SMALL_GIF)
+        self.assertIsNotNone(image_index)
 
     def test_post_profile_page_show_correct_context(self):
         """Проверка контекста profile"""
@@ -173,7 +177,7 @@ class PostViewsTest(TestCase):
         self.assertEqual(group_pr, 'Тестовая группа')
         self.assertEqual(post_count, NUMBER_OF_TEST_POSTS)
         self.assertEqual(str(author_name_check), 'TestUser')
-        self.assertEqual(image_pr, SMALL_GIF)
+        self.assertIsNotNone(image_pr)
 
     def test_post_detail_context(self):
         """Проверка контекста, передаваемого в post_detail."""
@@ -193,7 +197,7 @@ class PostViewsTest(TestCase):
         self.assertEqual(post_count, NUMBER_OF_TEST_POSTS)
         self.assertEqual(title_30_check,
                          f'Тестовый пост {NUMBER_OF_TEST_POSTS-1}')
-        self.assertEqual(image_det, SMALL_GIF)
+        self.assertIsNotNone(image_det)
 
     def test_post_edit_form(self):
         """Проверка формы редактирования поста."""
@@ -264,52 +268,85 @@ class PostViewsTest(TestCase):
     def test_new_comment_exists(self):
         """Проверка появления нового комментария на странице."""
 
-        count_of_comments = Comment.objects.filter(post=self.post).count()
+        new_post = Post.objects.create(
+            text='Тестовый пост',
+            author=self.user,
+            group=self.group,
+            image=self.uploaded
+        )
+        count_of_comments = Comment.objects.filter(post=new_post).count()
         Comment.objects.create(
-            post=self.post,
+            post=new_post,
             text=COMMENT_TEXT,
             author=self.user
         )
-        response = self.guest_client.get(self.DETAIL_URL)
+        response = self.guest_client.get(reverse(
+            'posts:post_detail', kwargs={'post_id': new_post.pk}
+        ))
         self.assertEqual(
             response.context['comments'].count(),
             count_of_comments + 1,
             'На странице поста не появился новый комментарий'
         )
 
-    def test_cache_ror_index(self):
-        """Проверка кэширования главной страницы(обновляется каждые 20 сек)"""
 
-        response = self.authorized_client.get(INDEX_URL)
+class CacheTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.author = User.objects.create_user(username='Author')
+        cls.post = Post.objects.create(author=cls.author,
+                                       text='Тестовый пост')
+
+    def test_posts_cache(self):
+        """Записи хранятся в течение 20 секунд (кеширование)"""
+
+        response = self.client.get(INDEX_URL)
         self.assertContains(response, self.post.text)
         Post.objects.get(pk=self.post.pk).delete()
+        response = self.client.get(INDEX_URL)
         self.assertContains(response, self.post.text)
         cache.clear()
+        response = self.client.get(INDEX_URL)
         self.assertNotContains(response, self.post.text)
 
-    def test_autorized_can_follow_and_unfollow(self):
-        """Авторизованный пользователь может
-        подписываться/отписываться на других пользователей."""
 
-        self.authorized_client2.get(reverse('posts:profile_follow',
-                                    args=(self.authorized_client,)))
-        self.assertTrue(
-            Follow.objects.filter(user=self.authorized_client2,
-                                  author=self.authorized_client2).exists())
-        self.authorized_client.get(reverse('posts:profile_unfollow',
-                                   args=(self.authorized_client,)))
-        self.assertFalse(
-            Follow.objects.filter(user=self.authorized_client2,
-                                  author=self.authorized_client2).exists())
+class FollowTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user1 = User.objects.create_user(username='USERNAME1')
+        cls.user2 = User.objects.create_user(username='USERNAME2')
+        cls.author = User.objects.create_user(username='Author')
+        cls.post = Post.objects.create(author=cls.author,
+                                       text='Тестовый пост')
 
-    def test_new_record_for_only_subscribers(self):
-        """Новые записи автора появляются в ленте только у подписчиков"""
+    def setUp(self):
+        self.follower_client = Client()
+        self.follower_client.force_login(self.user1)
+        self.unfollower_client = Client()
+        self.unfollower_client.force_login(self.user2)
 
-        self.authorized_client2.get(reverse('posts:profile_follow',
-                                    args=(self.authorized_client,)))
-        response = self.authorized_client2.get(reverse('posts:follow_index'))
+    def test_profile_follow(self):
+        """Авторизованный пользователь может подписываться и отписываться"""
+
+        self.follower_client.get(
+            reverse('posts:profile_follow', args=(self.author,)))
+        self.assertTrue(Follow.objects.filter(
+            user=self.user1, author=self.author).exists())
+        self.follower_client.get(
+            reverse('posts:profile_unfollow', args=(self.author,)))
+        self.assertFalse(Follow.objects.filter(
+            user=self.user1, author=self.author).exists())
+
+    def test_follow_index_contains_records(self):
+        """Новые записи автора появляются только у подписчиков"""
+
+        self.follower_client.get(
+            reverse('posts:profile_follow', args=(self.author,)))
+        response = self.follower_client.get(reverse('posts:follow_index'))
         self.assertEqual(len(response.context['page_obj']), 1)
         self.assertEqual(response.context['page_obj'][0].pk,
                          self.post.pk)
-        response = self.no_follower.get(reverse('posts:follow_index'))
+        response = self.unfollower_client.get(reverse('posts:follow_index'))
         self.assertEqual(len(response.context['page_obj']), 0)
