@@ -85,6 +85,7 @@ class PostFormTests(TestCase):
                 text=FORM_POST_TEXT,
                 group=form_data['group'],
                 author=self.user,
+                image='posts/small.gif'
             ).exists()
         )
 
@@ -95,6 +96,7 @@ class PostFormTests(TestCase):
         form_data_new = {
             'text': 'Новый текст',
             'group': self.group.id,
+            'image': self.uploaded
         }
         response = self.authorized_client.post(
             self.EDIT_URL,
@@ -106,6 +108,7 @@ class PostFormTests(TestCase):
                 text=form_data_new['text'],
                 group=form_data_new['group'],
                 author=self.user,
+                image='posts/small.gif'
             ).exists()
         )
         self.assertRedirects(

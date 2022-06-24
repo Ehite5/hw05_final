@@ -19,10 +19,6 @@ class Post(models.Model):
                                     db_index=True,
                                     verbose_name='date'
                                     )
-
-    def __str__(self):
-        return self.text
-
     group = models.ForeignKey(
         Group,
         blank=True,
@@ -45,6 +41,9 @@ class Post(models.Model):
         verbose_name = 'post'
         verbose_name_plural = 'posts'
         ordering = ['-pub_date']
+
+    def __str__(self):
+        return self.text[:15]
 
 
 class Comment(models.Model):

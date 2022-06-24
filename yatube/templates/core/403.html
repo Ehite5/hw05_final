@@ -1,5 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Custom 403{% endblock %}
+{% block title %}Ошибка 403{% endblock %}
 {% block content %}
-    <h1>Custom 403</h1>
+    <h1>Ошибка сервера 403 (Forbidden Error) означает, 
+        что вам запрещен доступ к странице, файлу или папке, 
+        URL которых вы ввели в адресной строке.</h1>
+    <a href="{% url 'posts:index' %}">Идите на главную</a>
 {% endblock %}

@@ -1,5 +1,5 @@
-# templates/core/403csrf.html
 {% extends "base.html" %}
 {% block content %}
-  <h1>Custom CSRF check error. 403</h1>
+  <h1>CSRF токен недействителен или отсутствует.</h1>
+  <a href="{% url 'posts:index' %}">Идите на главную</a>
 {% endblock %}
