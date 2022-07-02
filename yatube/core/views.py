@@ -14,7 +14,7 @@ def server_error(request):
     return render(request, 'core/500.html', status=STATUS_500)
 
 
-def permission_denied(request, exception):
+def permission_denied_view(request, exception):
     return render(request, 'core/403.html', status=STATUS_403)
 
 

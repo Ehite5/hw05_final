@@ -21,7 +21,6 @@
         </div>
       </div>
     </div>
-  {% cache 20 index_page %}
   <div class="container py-5">     
     <h1>{{text_main}}</h1>
     {% include 'includes/switcher.html'%}
@@ -31,6 +30,5 @@
     {% endfor %}
     {% include 'includes/paginator.html' %}
   </div>  
-  {% endcache %}
 {% endblock %}
 </body>
