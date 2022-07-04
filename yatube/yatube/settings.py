@@ -39,8 +39,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '[::1]',
     'testserver',
-    'www.Ehite.pythonanywhere.com',
-    'Ehite.pythonanywhere.com',
+    'www.ehite05.pythonanywhere.com',
+    'ehite05.pythonanywhere.com',
 ]
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
